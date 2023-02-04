@@ -24,6 +24,12 @@ async def send_welcome(message: types.Message):
     await message.reply("Hi! I'm ShowLocalTime bot!\nI'm new here, so please be gentle...")
 
 
+@dp.message_handler(commands=['time'])
+async def show_current_time(message: types.Message):
+    current_time = datetime.now().strftime("%H:%M:%S")
+    await message.reply("It's " + current_time)
+
+
 @dp.message_handler(chat_type=[types.ChatType.SUPERGROUP, types.ChatType.GROUP])
 async def echo_time_for_group(message: types.Message):
     current_time = datetime.now().strftime("%H:%M:%S")
