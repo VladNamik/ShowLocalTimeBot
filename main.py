@@ -1,7 +1,10 @@
 import logging
 from datetime import datetime
+
+import geopy
 from timezonefinder import TimezoneFinder
-from pytz import timezone, utc
+from pytz import timezone
+from geopy import geocoders
 
 from aiogram import Bot, Dispatcher, executor, types
 from utils import Config
@@ -35,22 +38,32 @@ async def show_current_time(message: types.Message):
 
 
 @dp.message_handler(chat_type=[types.ChatType.SUPERGROUP, types.ChatType.GROUP])
-async def echo_time_for_group(message: types.Message):
+async def answer_in_group(message: types.Message):
     current_time = datetime.now().strftime("%H:%M:%S")
     logging.log(level=logging.INFO, msg=message)
     await message.answer("For groups time is : " + current_time)
 
 
 @dp.message_handler()
-async def answer_private_messages(message: types.Message):
-    # Ignore direct messages for now
-    pass
+async def answer_in_private_messages(message: types.Message):
+    # TODO: reply only after get city key call
+    g = geocoders.ArcGIS()
+    location = g.geocode(message.text)
+    if location is not None:
+        tf = TimezoneFinder()
+        timezone_data = timezone(tf.timezone_at(lng=location.longitude, lat=location.latitude))
+        logging.log(level=logging.INFO, msg=location.address)
+        reply = "Your time is " + datetime.now(tz=timezone_data).strftime("%H:%M:%S")
+        await message.answer(reply, reply_markup=types.ReplyKeyboardRemove())
+    else:
+        await message.answer("City '{}' is not recognized. Please type your city again".format(message.text))
 
 
 def get_keyboard():
     keyboard = types.ReplyKeyboardMarkup()
-    button = types.KeyboardButton("Share Position", request_location=True)
-    keyboard.add(button)
+    button_location = types.KeyboardButton("Share Position", request_location=True)
+    button_city = types.KeyboardButton("Print location")
+    keyboard.add(button_location).add(button_city)
     return keyboard
 
 
@@ -60,10 +73,10 @@ async def handle_location(message: types.Message):
     lng = message.location.longitude
     tf = TimezoneFinder()
     timezone_data = timezone(tf.timezone_at(lng=lng, lat=lat))
-    reply = "latitude:  {}\nlongitude: {}".format(lat, lng) + "; your time is " + \
-            datetime.now(tz=timezone_data).strftime("%H:%M:%S")
+    reply = "Your time is " + datetime.now(tz=timezone_data).strftime("%H:%M:%S")
     await message.answer(reply, reply_markup=types.ReplyKeyboardRemove())
 
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
+

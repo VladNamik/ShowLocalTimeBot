@@ -15,3 +15,8 @@ class Config:
             api_token = data[API_TOKEN_CONFIG_KEY]
 
         return Config(api_token)
+
+
+def get_timezone_str(lng, lat):
+    # TODO
+    pass
