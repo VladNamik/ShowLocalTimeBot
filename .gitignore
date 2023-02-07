@@ -187,3 +187,6 @@ fabric.properties
 
 # Config files
 config.json
+
+# DB files
+*.db

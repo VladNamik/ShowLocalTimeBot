@@ -1,18 +1,17 @@
 import logging
 from datetime import datetime
 
-import geopy
 from timezonefinder import TimezoneFinder
 from pytz import timezone
 from geopy import geocoders
 
 from aiogram import Bot, Dispatcher, executor, types
-from utils import Config
+from utils import *
 
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-CONFIG_FILEPATH = "./config.json"
+CONFIG_FILEPATH = "./configs.json"
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -79,4 +78,3 @@ async def handle_location(message: types.Message):
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
-
