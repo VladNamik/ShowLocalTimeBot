@@ -1,0 +1,4 @@
+{
+  "api_token": "Your Telegram API token",
+  "db_filename": "local.db"
+}
