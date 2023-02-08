@@ -47,7 +47,12 @@ def get_group_by_id(session: Session, group_id: str) -> Group or None:
     return session.get(Group, group_id)
 
 
-def get_users_timezones_in_group(session: Session, group_id: str) -> list:
-    users = session.query(User).join(UserGroup, User.user_id == UserGroup.user_id)\
+def get_users_for_group(session: Session, group_id: str) -> list:
+    users = session.query(User).join(UserGroup, User.user_id == UserGroup.user_id) \
         .filter(UserGroup.group_id == group_id).all()
     return users
+
+
+def get_users_timezones_for_group(session: Session, group_id: str) -> list:
+    # TODO
+    pass

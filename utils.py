@@ -3,6 +3,7 @@ from dateutil import parser
 
 API_TOKEN_CONFIG_KEY = "api_token"
 DB_FILENAME_CONFIG_KEY = "db_filename"
+BOT_DB_SESSION_MAKER_KEY = "db_session"
 
 
 class Config:
