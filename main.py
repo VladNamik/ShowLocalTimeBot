@@ -7,11 +7,12 @@ from geopy import geocoders
 
 from aiogram import Bot, Dispatcher, executor, types
 from utils import *
+from db_utils import *
 
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-CONFIG_FILEPATH = "./configs.json"
+CONFIG_FILEPATH = "./config.json"
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -20,6 +21,8 @@ logging.basicConfig(level=logging.INFO)
 config = Config.read_from_json(CONFIG_FILEPATH)
 bot = Bot(token=config.api_token)
 dp = Dispatcher(bot)
+engine = create_db_engine(config)
+Session = get_scoped_session(engine)
 
 
 @dp.message_handler(commands=['start', 'help'])
@@ -78,3 +81,4 @@ async def handle_location(message: types.Message):
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
+
