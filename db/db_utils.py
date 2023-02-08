@@ -1,16 +1,15 @@
 from sqlalchemy import create_engine, Engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.orm import Session
-from sqlalchemy.sql import exists
 from utils import Config
 import os
 
-from db_map import *
+from db.db_map import *
 
 
 def create_db_engine(config: Config) -> Engine:
-    engine = create_engine(f'sqlite:///{config.db_filename}')
-    if not os.path.isfile(f'./{config.db_filename}'):
+    engine = create_engine(f"sqlite:///{config.db_filename}")
+    if not os.path.isfile(f"./{config.db_filename}"):
         Base.metadata.create_all(engine)
 
     return engine
