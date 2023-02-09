@@ -1,15 +1,17 @@
+import asyncio
 import logging
 
-from aiogram import Bot, Dispatcher, executor
+from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 from db.db_utils import *
-from telegram.handlers import register_commands
+from telegram.handlers import register_commands, set_commands
 from utils import BOT_DB_SESSION_MAKER_KEY
 
 CONFIG_FILEPATH = "./config.json"
 
-if __name__ == "__main__":
+
+async def main():
     # Configure logging
     logging.basicConfig(level=logging.INFO)
     logging.log(logging.INFO, "Starting bot")
@@ -19,15 +21,18 @@ if __name__ == "__main__":
     bot = Bot(token=config.api_token)
     # TODO MemoryStorage is not recommended for production use, check other options
     dp = Dispatcher(bot, storage=MemoryStorage())
+    await set_commands(bot)
     register_commands(dp)
 
     # Initialize database
     engine = create_db_engine(config)
     bot[BOT_DB_SESSION_MAKER_KEY] = get_scoped_session(engine)
 
-    try:
-        executor.start_polling(dp, skip_updates=True)
-    finally:
-        dp.storage.close()
-        dp.storage.wait_closed()
-        bot.session.close()
+    # Start polling
+    logging.log(logging.INFO, "Starting polling")
+    await dp.skip_updates()
+    await dp.start_polling()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

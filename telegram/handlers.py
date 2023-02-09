@@ -1,10 +1,11 @@
 import logging
 from datetime import datetime
 
+from aiogram.types import BotCommand
 from timezonefinder import TimezoneFinder
 from pytz import timezone
 from geopy import geocoders
-from aiogram import Dispatcher, types
+from aiogram import Dispatcher, types, Bot
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
@@ -23,11 +24,22 @@ class SetTimezoneStates(StatesGroup):
     waiting_for_location = State()
 
 
+async def set_commands(bot: Bot):
+    commands = [
+        BotCommand(command=f"/{COMMAND_HELP}", description="Show commands list"),
+        BotCommand(command=f"/{COMMAND_TIME}", description="Get current time according to your timezone"),
+        BotCommand(command=f"/{COMMAND_SET_LOCATION}", description="Set timezone using location"),
+        BotCommand(command=f"/{COMMAND_SET_CITY}", description="Set timezone using city"),
+        BotCommand(command=f"/{COMMAND_CANCEL}", description="Stop all questions and close keyboard")
+    ]
+    await bot.set_my_commands(commands)
+
+
 async def send_welcome(message: types.Message, state: FSMContext):
     """
     This handler will be called when user sends `/start` or `/help` command
     """
-    # TODO: move to string constants
+    # TODO: move to string constants, show commands list and description
     await state.finish()
     await message.reply("Hi! I'm ShowLocalTime bot!\nI'm new here, so please be gentle...")
 
