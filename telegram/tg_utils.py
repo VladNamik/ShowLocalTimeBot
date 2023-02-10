@@ -39,8 +39,11 @@ def save_group_if_needed(bot: Bot, tg_chat: tg_types.Chat) -> bool:
 
 
 def remove_group_if_needed(bot: Bot, tg_chat: tg_types.Chat):
-    # TODO: remove group
-    pass
+    db_session_maker = bot.get(BOT_DB_SESSION_MAKER_KEY)
+    if db_session_maker is not None:
+        with db_session_maker() as session:
+            delete_group(session, group_id=tg_chat.id)
+            session.commit()
 
 
 def save_user_in_group_if_needed(bot: Bot, tg_user: tg_types.User, tg_chat: tg_types.Chat) -> bool:
@@ -60,12 +63,20 @@ def save_user_in_group_if_needed(bot: Bot, tg_user: tg_types.User, tg_chat: tg_t
     return False
 
 
-def update_user_timezone(bot: Bot, tg_user: tg_types.User, timezone: str):
+def remove_user_from_group(bot: Bot, tg_user: tg_types.User, tg_chat: tg_types.Chat):
+    db_session_maker = bot.get(BOT_DB_SESSION_MAKER_KEY)
+    if db_session_maker is not None:
+        with db_session_maker() as session:
+            delete_user_from_group(session, group_id=tg_chat.id, user_id=tg_user.id)
+            session.commit()
+
+
+def update_user_timezone(bot: Bot, tg_user: tg_types.User, timezone_str: str):
     db_session_maker = bot.get(BOT_DB_SESSION_MAKER_KEY)
     with db_session_maker() as session:
         user = get_user_by_id(session, tg_user.id)
         if user is not None:
-            user.timezone = timezone
+            user.timezone = timezone_str
         session.commit()
 
 

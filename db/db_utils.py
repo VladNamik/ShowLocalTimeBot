@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Engine, select
+from sqlalchemy import create_engine, Engine, select, delete
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.orm import Session
 from utils import Config
@@ -33,10 +33,23 @@ def add_group(session: Session, group: Group):
         session.add(group)
 
 
+def delete_group(session: Session, group_id: int):
+    db_group = get_group_by_id(session, group_id)
+    if db_group is not None:
+        session.execute(delete(UserGroup).where(UserGroup.group_id == group_id))
+        session.delete(db_group)
+
+
 def add_user_to_group(session: Session, group_id: int, user_id: int):
     if get_user_group_entry(session, group_id, user_id) is None:
         user_group = UserGroup(user_id=user_id, group_id=group_id)
         session.add(user_group)
+
+
+def delete_user_from_group(session: Session, group_id: int, user_id: int):
+    user_group = get_user_group_entry(session, group_id, user_id)
+    if user_group is not None:
+        session.delete(user_group)
 
 
 def get_user_group_entry(session: Session, group_id: int, user_id: int) -> UserGroup:

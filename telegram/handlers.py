@@ -119,7 +119,7 @@ async def handle_print_city_option(message: types.Message, state: FSMContext):
 
 
 async def handle_print_location_option(message: types.Message, state: FSMContext):
-    await message.answer("Please share your location")
+    await message.answer("Please share your location via attachments -> location")
     await state.set_state(SetTimezoneStates.waiting_for_location.state)
 
 
@@ -157,6 +157,18 @@ async def handle_bot_added_to_group(message: types.ChatMemberUpdated):
         await message.bot.send_message(message.chat.id, "Hi! I'm ShowLocalTimeBot, please be gentle with me, senpai...")
     elif new.status == "left":
         remove_group_if_needed(message.bot, message.chat)
+
+
+async def handle_user_added_to_group(message: types.ChatMemberUpdated):
+    new = message.new_chat_member
+    if new.user.is_bot:
+        return
+
+    if new.status == "member":
+        save_user_in_group_if_needed(message.bot, new.user, message.chat)
+        await message.bot.send_message(message.chat.id, "Hi! I'm ShowLocalTimeBot, please be gentle with me, senpai...")
+    elif new.status == "left":
+        remove_user_from_group(message.bot, new.user, message.chat)
 
 
 async def handle_message_with_time(message: types.Message):
@@ -204,6 +216,7 @@ def register_commands(dp: Dispatcher, config: Config):
 
     # Special cases handlers
     dp.register_my_chat_member_handler(handle_bot_added_to_group)
+    dp.register_chat_member_handler(handle_user_added_to_group)
 
     # General commands and handlers
     dp.register_message_handler(handle_group_messages, chat_type=[types.ChatType.SUPERGROUP, types.ChatType.GROUP])
