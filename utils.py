@@ -1,15 +1,19 @@
 import json
 from dateutil import parser
+from datetime import datetime
+from typing import Optional
 
 API_TOKEN_CONFIG_KEY = "api_token"
 DB_FILENAME_CONFIG_KEY = "db_filename"
+BOT_NAME_CONFIG_KEY = "bot_name"
 BOT_DB_SESSION_MAKER_KEY = "db_session"
 
 
 class Config:
-    def __init__(self, token: str, db_filename: str):
+    def __init__(self, token: str, db_filename: str, bot_name: str):
         self.api_token = token
         self.db_filename = db_filename
+        self.bot_name = bot_name
 
     @classmethod
     def read_from_json(cls, filepath: str):
@@ -17,16 +21,12 @@ class Config:
             data = json.load(config_json)
             api_token = data[API_TOKEN_CONFIG_KEY]
             db_filename = data[DB_FILENAME_CONFIG_KEY]
+            bot_name = data[BOT_NAME_CONFIG_KEY]
 
-        return Config(api_token, db_filename)
-
-
-def get_timezone_str(lng, lat):
-    # TODO
-    pass
+        return Config(api_token, db_filename, bot_name)
 
 
-def get_date(string: str, fuzzy: bool = True) -> str or None:
+def get_datetime(string: str, fuzzy: bool = True) -> Optional[datetime]:
     """
     Returns None if string does not contain date
 

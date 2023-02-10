@@ -1,4 +1,5 @@
 {
   "api_token": "Your Telegram API token",
-  "db_filename": "local.db"
+  "db_filename": "local.db",
+  "bot_name": "@showlocaltime_bot"
 }

@@ -1,5 +1,5 @@
-import asyncio
 import logging
+import asyncio
 
 from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -22,13 +22,14 @@ async def main():
     # TODO MemoryStorage is not recommended for production use, check other options
     dp = Dispatcher(bot, storage=MemoryStorage())
     await set_commands(bot)
-    register_commands(dp)
+    register_commands(dp, config)
 
     # Initialize database
     engine = create_db_engine(config)
     bot[BOT_DB_SESSION_MAKER_KEY] = get_scoped_session(engine)
 
     # Start polling
+    # TODO: add anti-flood, see https://stackoverflow.com/questions/68099134/how-to-delay-aiogram-command
     logging.log(logging.INFO, "Starting polling")
     await dp.skip_updates()
     await dp.start_polling()
