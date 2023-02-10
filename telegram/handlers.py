@@ -69,6 +69,29 @@ async def show_current_time(message: types.Message, state: FSMContext):
         await state.set_state(SetTimezoneStates.waiting_for_location.state)
 
 
+async def show_current_group_time(message: types.Message, state: FSMContext):
+    if message.chat.type != "private":
+        save_user_in_group_if_needed(message.bot, tg_user=message.from_user, tg_chat=message.chat)
+
+    db_session_maker = message.bot.get(BOT_DB_SESSION_MAKER_KEY)
+    with db_session_maker() as session:
+        users = get_users_for_group(session, message.chat.id)
+
+    if users is not None and len(users) > 0:
+        time_user_map = get_time_user_map(message.bot, message.from_user, message.chat, datetime.now().astimezone())
+        if time_user_map is not None:
+            reply_message = "\n".join(map(
+                lambda user_time: make_mentions_time_str(time_user_map[user_time], user_time),
+                time_user_map.keys()))
+
+            await message.reply(reply_message, disable_notification=True)
+        else:
+            await message.reply("Couldn't find time string or user hasn't provided his timezone")
+    else:
+        # TODO: add inline keyboard
+        await message.reply("Please share your location first using /set_location or /set_city commands")
+
+
 async def handle_location(message: types.Message, state: FSMContext):
     save_user_if_needed(message.bot, message.from_user)
 
@@ -137,9 +160,11 @@ async def handle_bot_added_to_group(message: types.ChatMemberUpdated):
 
 
 async def handle_message_with_time(message: types.Message):
-    save_user_in_group_if_needed(message.bot, tg_user=message.from_user, tg_chat=message.chat)
+    if message.chat.type != "private":
+        save_user_in_group_if_needed(message.bot, tg_user=message.from_user, tg_chat=message.chat)
+
     time_from_message = get_datetime(message.text)
-    # TODO handle situation when user hasn't provided his timezone differently
+    # TODO handle in different way situation when user hasn't provided his timezone
     time_user_map = get_time_user_map(message.bot, message.from_user, message.chat, time_from_message)
 
     if time_user_map is not None:
@@ -159,7 +184,10 @@ async def handle_group_messages(message: types.Message):
 def register_commands(dp: Dispatcher, config: Config):
     # Main commands
     dp.register_message_handler(send_welcome, commands=[COMMAND_START, COMMAND_HELP], state="*")
-    dp.register_message_handler(show_current_time, commands=COMMAND_TIME, state="*")
+    dp.register_message_handler(show_current_group_time, commands=COMMAND_TIME,
+                                chat_type=[types.ChatType.SUPERGROUP, types.ChatType.GROUP], state="*")
+    dp.register_message_handler(show_current_time, commands=COMMAND_TIME,
+                                chat_type=[types.ChatType.PRIVATE, types.ChatType.SENDER], state="*")
     dp.register_message_handler(cmd_cancel, commands=COMMAND_CANCEL, state="*")
 
     # Set timezone bundle

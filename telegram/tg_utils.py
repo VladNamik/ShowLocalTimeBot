@@ -79,10 +79,13 @@ def get_time_user_map(bot: Bot, tg_user: tg_types.User, tg_chat: tg_types.Chat,
                 all_users = get_users_for_group(session, tg_chat.id)
 
                 time_user_map = dict()
-                aware_time_from_message = timezone(user.timezone).localize(time_from_message)
+                # Set timezone
+                if time_from_message.tzinfo is None or time_from_message.tzinfo.utcoffset(time_from_message) is None:
+                    time_from_message = timezone(user.timezone).localize(time_from_message)
+
                 for user_from_group in all_users:
                     if user_from_group.timezone is not None:
-                        time = aware_time_from_message.astimezone(timezone(user_from_group.timezone)).strftime("%H:%M")
+                        time = time_from_message.astimezone(timezone(user_from_group.timezone)).strftime("%H:%M")
                         if time not in time_user_map:
                             time_user_map[time] = [user_from_group]
                         else:
